@@ -1,0 +1,13 @@
+{
+  "id": "#string",
+  "accountNumber": "#string",
+  "holderName": "#string",
+  "currency": "#regex PEN|USD",
+  "balance": "#number",
+  "active": "#boolean",
+  "alias": "##string",
+  "contact": "#(contact)",
+  "tags": "#[] #string",
+  "createdAt": "#string",
+  "updatedAt": "##string"
+}

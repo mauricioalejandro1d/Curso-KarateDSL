@@ -1,0 +1,24 @@
+# Pipeline de ejemplo (sesión 3). Requiere un Variable Group "novus-secrets" con:
+#   NOVUS_USER, NOVUS_PASS (secretas) y API_URL (por ejemplo https://novus-fintech-demo-api.onrender.com)
+trigger: [ main ]
+pool: { vmImage: ubuntu-latest }
+variables:
+  - group: novus-secrets        # idealmente enlazado a Key Vault
+steps:
+  - script: curl -s --retry 5 $(API_URL)/health
+    displayName: Calentar la API
+  - task: JavaToolInstaller@0
+    inputs:
+      versionSpec: '21'
+      jdkArchitectureOption: x64
+      jdkSourceOption: PreInstalled
+  - task: Maven@4
+    inputs:
+      goals: test
+      options: '-Dkarate.env=qa -Dkarate.options="--tags @smoke"'
+      publishJUnitResults: true
+      testResultsFiles: '**/junit-xml/*.xml'
+    env: { NOVUS_USER: $(NOVUS_USER), NOVUS_PASS: $(NOVUS_PASS) }
+  - publish: target/karate-reports
+    artifact: karate-report
+    condition: always()
