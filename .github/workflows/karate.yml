@@ -2,7 +2,7 @@ name: Karate API tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
   schedule:
     - cron: '0 6 * * *'        # 06:00 UTC (01:00 en Lima): regresión nocturna
