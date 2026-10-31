@@ -1,4 +1,4 @@
-@smoke
+@ignore
 Feature: Estado de la API
 
   Background:

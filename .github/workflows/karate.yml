@@ -1,0 +1,69 @@
+name: Karate API tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * *'        # 06:00 UTC (01:00 en Lima): regresión nocturna
+  workflow_dispatch:
+    inputs:
+      env:
+        description: Ambiente
+        type: choice
+        options: [dev, qa]
+        default: qa
+      tags:
+        description: Etiquetas (por ejemplo @smoke)
+        default: '@smoke'
+
+# Permisos mínimos: el workflow solo lee el repositorio
+permissions:
+  contents: read
+
+# Evita corridas duplicadas: un pull request nuevo cancela la corrida anterior
+concurrency:
+  group: karate-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  karate:
+    runs-on: ubuntu-latest
+    environment: Dev   # GitHub Environment donde viven NOVUS_USER y NOVUS_PASS
+    timeout-minutes: 20
+    env:
+      KARATE_ENV: ${{ inputs.env || 'qa' }}
+      KARATE_TAGS: ${{ inputs.tags || (github.event_name == 'schedule' && '@regression' || '@smoke') }}
+      API_URL: ${{ vars.API_URL }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Calentar la API (arranque en frío)
+        run: |
+          curl -s --retry 5 --retry-delay 10 --retry-all-errors \
+            "${API_URL:-https://novus-fintech-demo-api.onrender.com}/health" -o /dev/null || true
+
+      - name: Ejecutar Karate
+        env:
+          NOVUS_USER: ${{ secrets.NOVUS_USER }}
+          NOVUS_PASS: ${{ secrets.NOVUS_PASS }}
+        run: |
+          mvn -B test -Dtest=ParallelTest \
+            -Dkarate.env=$KARATE_ENV \
+            -Dkarate.options="--tags $KARATE_TAGS"
+
+      - name: Publicar el reporte
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: karate-report
+          path: target/karate-reports
+          retention-days: 14

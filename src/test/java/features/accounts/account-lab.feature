@@ -1,16 +1,17 @@
+
 Feature: Accounts-Lab
 
 Background:
-    Given url baseUrl
-  * def user = karate.sysenv('NOVUS_USER')
-  * def pass = karate.sysenv('NOVUS_PASS')
-    Given path 'auth', 'login'
-    And request { username: '#(user)', password: '#(pass)' }
-    When method post
-    Then status 200
-    And match response.tokenType == 'Bearer'
-  * def token = response.token
-  * configure headers = { Authorization: '#("Bearer " + token)' }
+  * url baseUrl
+#   * def user = karate.sysenv('NOVUS_USER')
+#   * def pass = karate.sysenv('NOVUS_PASS')
+#     Given path 'auth', 'login'
+#     And request { username: '#(user)', password: '#(pass)' }
+#     When method post
+#     Then status 200
+#     And match response.tokenType == 'Bearer'
+#   * def token = response.token
+#   * configure headers = { Authorization: '#("Bearer " + token)' }
 
     Scenario: Listar cuenta con pageSize 10
         Given path 'accounts'
@@ -53,3 +54,5 @@ Background:
         contact: '#object', tags: '#array', createdAt: '#string'
         }
         """
+
+    

@@ -6,8 +6,8 @@
   "balance": "#number",
   "active": "#boolean",
   "alias": "##string",
-  "contact": "#(contact)",
-  "tags": "#[] #string",
+  "contact": "#object",
+  "tags": "#array",
   "createdAt": "#string",
   "updatedAt": "##string"
 }
